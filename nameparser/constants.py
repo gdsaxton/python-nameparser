@@ -36,12 +36,12 @@ SUFFICES = set([
     'esq','esquire','jr','sr','2','i','ii','iii','iv','v','clu','chfc',
     'cfp','md','phd'
 ])
-CAPITALIZATION_EXCEPTIONS = {
-    'ii': 'II',
-    'iii': 'III',
-    'iv': 'IV',
-    'md': 'M.D.',
-    'phd': 'Ph.D.'
-}
+CAPITALIZATION_EXCEPTIONS = (
+    ('ii' ,'II'),
+    ('iii','III'),
+    ('iv' ,'IV'),
+    ('md' ,'M.D.'),
+    ('phd','Ph.D.'),
+)
 CONJUNCTIONS = set(['&', 'and', 'et', 'e', 'und', 'y'])
 
