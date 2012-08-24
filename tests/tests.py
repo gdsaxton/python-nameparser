@@ -1049,6 +1049,7 @@ class HumanNameCapitalizationTestCase(HumanNameTestBase):
         hn.capitalize()
         self.m(unicode(hn), u'Matth\xe4us Schmidt', hn)
     
+    
 
 class HumanNameOutputFormatTests(HumanNameTestBase):
     
@@ -1058,6 +1059,22 @@ class HumanNameOutputFormatTests(HumanNameTestBase):
         self.assertEqual(unicode(hn), "Rev John A. Kenneth Doe III")
         hn.string_format = "{last}, {title} {first} {middle}, {suffix}"
         self.assertEqual(unicode(hn), "Doe, Rev John A. Kenneth, III")
+
+class HumanNamePeriodTests(HumanNameTestBase):
+    
+    # def test_initials_with_periods_but_no_spaces(self):
+    #     hn = HumanName(u'L.I. Han')
+    #     self.m(hn.title,"", hn)
+    #     self.m(hn.first,"L.", hn)
+    #     self.m(hn.middle,"I.", hn)
+    #     self.m(hn.last,"Han", hn)
+    
+    def test_title_with_periods_but_no_spaces(self):
+        hn = HumanName(u'Dr.John Han')
+        self.m(hn.title,"Dr.", hn)
+        self.m(hn.first,"John", hn)
+        self.m(hn.middle,"", hn)
+        self.m(hn.last,"Han", hn)
 
 
 class HumanNameIterativeTestCase(HumanNameTestBase):
@@ -1072,6 +1089,8 @@ class HumanNameIterativeTestCase(HumanNameTestBase):
         ("John Jones (Google Docs)", {'first':'John','last':'Jones'}),
         ("John Jones (Google Docs), Jr.", {'first':'John','last':'Jones','suffix':'Jr.'}),
         ("John Jones (Google Docs), Jr. (Unknown)", {'first':'John','last':'Jones','suffix':'Jr.'}),
+        # ("Dr. Juan Q. Xavier de la Vega I", {'title':'Dr.','first':'Juan','middle':'Q. Xavier','last':'de la Vega','suffix':'I'}),
+        ("John Le", {'first':'John','last':'Le'}),
     )
     
     def test_given(self):
@@ -1228,7 +1247,7 @@ TEST_NAMES = (
     'Mr. and Mrs. John Smith',
 )
 
-class HumanNameVariationTests(HumanNameTestBase):
+class HumanNameVariationTests(object):
     
     # test automated variations of names in TEST_NAMES. 
     # Helps test that the 3 code trees work the same

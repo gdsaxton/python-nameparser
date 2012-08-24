@@ -107,11 +107,12 @@ class HumanName(object):
         }
     
     @property
-    def _dict(self):
+    def as_dict(self):
         d = {}
         for m in self._members:
             d[m] = getattr(self, m)
         return d
+    _dict = as_dict # backwards compatability
     
     ### attributes
     
@@ -245,11 +246,14 @@ class HumanName(object):
         if not isinstance(self._full_name, unicode):
             self._full_name = unicode(self._full_name, self.ENCODING)
         
+        # add spaces after periods in case those error-prone humans forget, e.g. "Dr.John or H.I.Jones"
+        self._full_name = re.sub(re_period, u". ", self._full_name.strip() )
+        
         # collapse multiple spaces
-        self._full_name = re.sub(re_spaces, u" ", self._full_name.strip() )
+        self._full_name = re.sub(re_spaces, u" ", self._full_name )
         
         # remove anything inside parenthesis
-        self._full_name = re.sub(r'\(.*?\)', u"", self._full_name)
+        self._full_name = re.sub(re_parens, u"", self._full_name)
         
         # break up full_name by commas
         parts = [x.strip() for x in self._full_name.split(",")]
