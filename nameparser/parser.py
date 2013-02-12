@@ -36,10 +36,17 @@ class HumanName(object):
      
     """
     
-    def __init__(self, full_name=u"", titles_c=TITLES, prefixes_c=PREFIXES, 
-        suffixes_c=SUFFIXES, punc_titles_c=PUNC_TITLES, conjunctions_c=CONJUNCTIONS,
-        capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), encoding=ENCODING,
-        string_format=None):
+    def __init__(self, 
+            full_name=u"", 
+            titles_c=TITLES, 
+            prefixes_c=PREFIXES, 
+            suffixes_c=SUFFIXES, 
+            punc_titles_c=PUNC_TITLES, 
+            conjunctions_c=CONJUNCTIONS,
+            capitalization_exceptions_c=dict(CAPITALIZATION_EXCEPTIONS), 
+            title_suffixes_c=TITLE_SUFFIXES, 
+            encoding=ENCODING, 
+            string_format=None):
         
         self.ENCODING = encoding
         self.TITLES_C = titles_c
@@ -48,6 +55,7 @@ class HumanName(object):
         self.PREFIXES_C = prefixes_c
         self.SUFFIXES_C = suffixes_c
         self.CAPITALIZATION_EXCEPTIONS_C = capitalization_exceptions_c
+        self.TITLE_SUFFIXES_C = title_suffixes_c
         self.SUFFIXES_PREFIXES_TITLES_C = self.SUFFIXES_C | self.PREFIXES_C | self.TITLES_C
         self.string_format = string_format
         self.count = 0
@@ -102,14 +110,23 @@ class HumanName(object):
     def __repr__(self):
         if self.unparsable:
             return u"<%(class)s : [ Unparsable ] >" % {'class': self.__class__.__name__,}
-        return u"<%(class)s : [\n\tTitle: '%(title)s' \n\tFirst: '%(first)s' \n\tMiddle: '%(middle)s' \n\tLast: '%(last)s' \n\tSuffix: '%(suffix)s'\n]>" % {
+        template = """<{class} : [
+    title:         "{title}"
+    first:        *"{first}"
+    middle:       *"{middle}"
+    last:         *"{last}"
+    suffix:       *"{suffix}"
+    title_suffix:  "{title_suffix}"
+]>"""
+        return template.format(**{
             'class': self.__class__.__name__,
             'title': self.title,
             'first': self.first,
             'middle': self.middle,
             'last': self.last,
             'suffix': self.suffix,
-        }
+            'title_suffix': self.title_suffix,
+        })
     
     @property
     def _dict(self):
@@ -192,11 +209,13 @@ class HumanName(object):
         return lc(piece) not in self.SUFFIXES_PREFIXES_TITLES_C and not is_an_initial(piece)
     
     def parse_comma_content(self, pieces):
-        for piece in pieces:
-            if self.is_suffix(piece):
-                self.suffix_list.append(piece)
-            else:
-                self.title_suffix_list.append(piece)
+        if self.is_suffix(pieces[0]):
+            self.suffix_list.append(pieces.pop(0))
+        self.title_suffix_list += pieces
+        # for piece in pieces:
+        #     if self.is_suffix(piece):
+        #         self.suffix_list.append(piece)
+        #     else:
         
     
     ### full_name parser
@@ -296,7 +315,7 @@ class HumanName(object):
         
         if len(parts) == 1:
             
-            # no commas, title first middle middle middle last suffix
+            # no commas, title first middle middle middle last suffix title_suffix
             
             pieces = self._parse_pieces(parts)
             
@@ -306,6 +325,7 @@ class HumanName(object):
                 except IndexError:
                     next = None
                 
+                # title must have a next piece, unless it's just a title
                 if self.is_title(piece) and (next or len(pieces) == 1):
                     self.title_list.append(piece)
                     continue
@@ -322,9 +342,9 @@ class HumanName(object):
                 
                 self.middle_list.append(piece)
         else:
-            if lc(parts[1]) in self.SUFFIXES_C | self.TITLES_C:
+            if lc(parts[1]) in self.SUFFIXES_C | self.TITLE_SUFFIXES_C:
                 
-                # suffix comma: title first middle last, suffix [, suffix]
+                # suffix comma: title first middle last, suffix [, title_suffix]
                 
                 # for p in parts[1:]:
                 #     if self.is_suffix(p):
@@ -353,8 +373,7 @@ class HumanName(object):
                         continue
                     self.middle_list.append(piece)
             else:
-                
-                # lastname comma: last, title first middles[,] suffix [,suffix]
+                # lastname comma: last, title first middles[,] suffix [,title_suffix]
                 pieces = self._parse_pieces(parts[1].split(' '), 1)
                 
                 log.debug(u"pieces: " + unicode(pieces))
@@ -381,7 +400,8 @@ class HumanName(object):
                         self.parse_comma_content(parts[2:])
                 except IndexError:
                     pass
-                
+        
+        
         if len(self) < 0:
             log.info(u"Unparsable full_name: " + self._full_name)
         else:
