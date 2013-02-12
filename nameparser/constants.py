@@ -75,10 +75,13 @@ PREFIXES = set([
     'abu','bon','bin','da','dal','de','del','der','de','di',u'dí','ibn',
     'la','le','san','st','ste','van','vel','von'
 ])
+# suffixes should be part of the person's legal name, not meta data about them
+# "J. Smith Jr." and "J. Smith Sr." are certainly different people, whereas 
+# "J. Smith", "J. Smith, PhD" and "J. Smith, MD" may or may not be.
 SUFFIXES = set([
-    'esq','esquire','jr','sr','2','i','ii','iii','iv','v','clu','chfc',
-    'cfp','md','phd'
+    'jr','sr','2','i','ii','iii','iv','v',
 ])
+# SUFFIXES = set(('jr','sr','2','i','ii','iii','iv','v'))
 CAPITALIZATION_EXCEPTIONS = (
     ('ii' ,'II'),
     ('iii','III'),
